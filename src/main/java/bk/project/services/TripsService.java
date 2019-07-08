@@ -8,4 +8,5 @@ public interface TripsService {
     public Trips createTrip(Trips trips);
     public List<Trips> completedTrips();
     public Trips findOne(int id);
+    public Trips completeTrip(Trips trips);
 }

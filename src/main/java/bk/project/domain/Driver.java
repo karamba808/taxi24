@@ -17,6 +17,6 @@ public class Driver {
     private String gender;
     private String permitCard;
     private boolean status;
-    private double lat;
-    private double lng;
+    private double latitude;
+    private double longitude;
 }

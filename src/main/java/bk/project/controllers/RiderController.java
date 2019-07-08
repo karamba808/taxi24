@@ -20,7 +20,7 @@ public class RiderController {
         ResponseBean responseBean = new ResponseBean();
         try {
                 responseBean.setCode(200);
-                responseBean.setDescription("saved");
+                responseBean.setDescription("Rider saved");
                 responseBean.setObject(riderService.createDriver(rider));
 
         }catch (Exception e){
@@ -36,7 +36,7 @@ public class RiderController {
     public ResponseEntity<Object> AllDriver(){
         ResponseBean responseBean = new ResponseBean();
         responseBean.setCode(200);
-        responseBean.setDescription("All driver");
+        responseBean.setDescription("All Riders");
         responseBean.setObject(riderService.allRivers());
         return new ResponseEntity<Object>(responseBean,HttpStatus.OK);
     }
@@ -63,26 +63,20 @@ public class RiderController {
         return new ResponseEntity<Object>(responseBean,HttpStatus.OK);
     }
 
-//    @GetMapping("/{id}/closest")
-//    public ResponseEntity<Object> closestDriver(@PathVariable("id") int id){
-//        ResponseBean responseBean = new ResponseBean();
-//        Rider rider = riderService.findById(id);
-//        try {
-//            if(rider != null){
-//                responseBean.setCode(200);
-//                responseBean.setDescription("rider found");
-//                responseBean.setObject(riderService.ClosestDriver(rider.getLat(),rider.getLng()));
-//            }else{
-//                responseBean.setCode(350);
-//                responseBean.setDescription("Not found");
-//                responseBean.setObject(null);
-//            }
-//        }catch (Exception e){
-//            e.printStackTrace();
-//            responseBean.setCode(300);
-//            responseBean.setDescription("Not found");
-//            responseBean.setObject(null);
-//        }
-//        return new ResponseEntity<Object>(responseBean,HttpStatus.OK);
-//    }
+    @GetMapping("/around/{id}")
+    public ResponseEntity<Object> findAround(@PathVariable("id") int id){
+        ResponseBean responseBean = new ResponseBean();
+        Rider rider = riderService.findById(id);
+        try {
+            responseBean.setCode(200);
+            responseBean.setDescription("available riders found");
+            responseBean.setObject(riderService.searcharound(rider.getLatitude(),rider.getLongitude()));
+        }catch (Exception e){
+            e.printStackTrace();
+            responseBean.setCode(300);
+            responseBean.setDescription("Not found");
+            responseBean.setObject(null);
+        }
+        return new ResponseEntity<Object>(responseBean,HttpStatus.OK);
+    }
 }

@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 @RestController
 @RequestMapping("/driver")
 public class DriverController {
@@ -20,7 +21,7 @@ public class DriverController {
         try {
             if(!driver.getPermitCard().isEmpty()){
                 responseBean.setCode(200);
-                responseBean.setDescription("saved");
+                responseBean.setDescription("Driver saved");
                 responseBean.setObject(driverService.createDriver(driver));
             }
         }catch (Exception e){
@@ -35,7 +36,7 @@ public class DriverController {
     public ResponseEntity<Object> AllDriver(){
         ResponseBean responseBean = new ResponseBean();
         responseBean.setCode(200);
-        responseBean.setDescription("All driver");
+        responseBean.setDescription("All drivers");
         responseBean.setObject(driverService.allDrivers());
         return new ResponseEntity<Object>(responseBean,HttpStatus.OK);
     }
@@ -62,24 +63,19 @@ public class DriverController {
         return new ResponseEntity<Object>(responseBean,HttpStatus.OK);
     }
 
-//    @GetMapping("/around/")
-//    public ResponseEntity<Object> findByDriverAround(){
-//        ResponseBean responseBean = new ResponseBean();
-//        try {
-////            if(driver != null){
-//                responseBean.setCode(200);
-//                responseBean.setDescription("Driver found");
-//                responseBean.setObject(driverService.availableDriver(3.0,-1.939793,30.045612));
-////            }else{
-////                responseBean.setCode(300);
-////                responseBean.setDescription("Not found");
-////                responseBean.setObject(null);
-////            }
-//        }catch (Exception e){
-//            responseBean.setCode(300);
-//            responseBean.setDescription("Not found");
-//            responseBean.setObject(null);
-//        }
-//        return new ResponseEntity<Object>(responseBean,HttpStatus.OK);
-//    }
+    @GetMapping("/available")
+    public ResponseEntity<Object> findByDriverAround(){
+        ResponseBean responseBean = new ResponseBean();
+        try {
+                responseBean.setCode(200);
+                responseBean.setDescription("Available Drivers");
+                responseBean.setObject(driverService.availableDriver(-1.959170,30.086825));
+
+        }catch (Exception e){
+            responseBean.setCode(300);
+            responseBean.setDescription("Not found");
+            responseBean.setObject(null);
+        }
+        return new ResponseEntity<Object>(responseBean,HttpStatus.OK);
+    }
 }

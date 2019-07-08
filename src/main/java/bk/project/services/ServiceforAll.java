@@ -1,6 +1,9 @@
-package bk.project.services.impl;
+package bk.project.services;
 
-public class Service {
+
+import bk.project.domain.Rider;
+
+public class ServiceforAll {
 
     public double getDistanceFromLatLonInKm(double lat1,double lon1,double lat2,double lon2) {
         int R = 6371; // Radius of the earth in km
@@ -21,8 +24,9 @@ public class Service {
     }
 
     public static void main(String[] args) {
-        Service s = new Service();
-        double fg = s.getDistanceFromLatLonInKm(30.063148,-2.319884,29.488347,-1.799316);
+        ServiceforAll s = new ServiceforAll();
+        Rider rider = new Rider();
+        double fg = Math.round(s.getDistanceFromLatLonInKm(rider.getLatitude(),rider.getLongitude(),-1.985751,30.103087));
         System.out.println("Distance is : "+fg);
     }
 

@@ -3,21 +3,20 @@ package bk.project.controllers;
 
 
 import bk.project.ResponseBean;
+import bk.project.domain.Driver;
+import bk.project.domain.Rider;
 import bk.project.domain.Trips;
+import bk.project.services.DriverService;
+import bk.project.services.RiderService;
+import bk.project.services.ServiceforAll;
 import bk.project.services.TripsService;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
-import java.io.IOException;
+import java.util.Date;
 
 @RestController
 @RequestMapping("/trip")
@@ -25,28 +24,35 @@ public class TripController {
     OkHttpClient client = new OkHttpClient();
     @Autowired
     private TripsService tripsService;
+    @Autowired
+    private DriverService driverService;
+    @Autowired
+    private RiderService riderService;
+    private ServiceforAll s = new ServiceforAll();
 
-    @PostMapping("/")
-    public ResponseEntity<Object> createDriver(@RequestBody Trips trip){
+    @PostMapping("/rider/{rider_id}/driver/{driver_id}/destination/{latitude}/{longitude}")
+    public ResponseEntity<Object> createDriver(@RequestBody Trips trip, @PathVariable("rider_id") int rider_id,@PathVariable("driver_id") int driver_id,@PathVariable("latitude")double latitude, @PathVariable("longitude")double longitude){
         ResponseBean responseBean = new ResponseBean();
+        Rider rider = riderService.findById(rider_id);
+        Driver driver = driverService.findById(driver_id);
         try {
-            String response = this.calculate(trip.getFromLat(), trip.getFromLng(), trip.getToLat(), trip.getToLng());
-            System.out.println(response);
-            JSONParser parser = new JSONParser();
-            Object obj = parser.parse(response);
-            JSONObject jsonobj=(JSONObject)obj;
-            JSONArray dist=(JSONArray)jsonobj.get("rows");
-            JSONObject obj2 = (JSONObject)dist.get(0);
-            JSONArray disting=(JSONArray)obj2.get("elements");
-            JSONObject obj3 = (JSONObject)disting.get(0);
-            JSONObject obj4=(JSONObject)obj3.get("distance");
-            //JSONObject duration=(JSONObject)obj3.get("duration");
-            String distance = (String) obj4.get("text");
-            double realDistance =Double.parseDouble(distance.substring(0, distance.length()-3));
-            trip.setDistance(realDistance);
-            responseBean.setCode(200);
-            responseBean.setDescription("saved");
-            responseBean.setObject(tripsService.createTrip(trip));
+            if(rider != null && driver != null){
+                trip.setFromLat(rider.getLatitude());
+                trip.setFromLng(rider.getLongitude());
+                trip.setDriverId(driver.getId());
+                trip.setRiderId(rider.getId());
+                trip.setToLat(latitude);
+                trip.setToLng(longitude);
+                trip.setDistance(Math.round(s.getDistanceFromLatLonInKm(rider.getLatitude(),rider.getLongitude(),latitude,longitude)));
+                responseBean.setCode(200);
+                responseBean.setDescription("Trip created");
+                responseBean.setObject(tripsService.createTrip(trip));
+            }
+            else {
+                responseBean.setCode(300);
+                responseBean.setDescription("rider or Driver not found");
+                responseBean.setObject(null);
+            }
 
         }catch (Exception e){
             e.printStackTrace();
@@ -90,11 +96,28 @@ public class TripController {
         return new ResponseEntity<Object>(responseBean,HttpStatus.OK);
     }
 
-    public String calculate(double fromLat,double fromLng,double toLat,double toLng) throws IOException {
-        String url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins="+fromLat+","+fromLng+"&destinations="+toLat+","+toLng+"&key=AIzaSyDUYbTR-3PDWPhgxjENs4yf35g2eHc641s";
-        Request request = new Request.Builder().url(url).build();
+    @PutMapping(value = "/complete_trips/{id}/status/{status}")
+    public ResponseEntity<Object> completeActiveTrip(@PathVariable("id") int id,@PathVariable("status") int status){
+        Trips trips = tripsService.findOne(id);
+        ResponseBean responseBean = new ResponseBean();
+        if (trips != null){
+            try {
+                trips.setStatus(status);
+                trips.setCompletedAt(new Date().toString());
+                responseBean.setCode(200);
+                responseBean.setDescription("trip well Completed");
+                responseBean.setObject(tripsService.completeTrip(trips));
 
-        Response response = client.newCall(request).execute();
-        return response.body().string();
+            }catch (Exception e){
+                responseBean.setCode(300);
+                responseBean.setDescription("Action have some issues");
+                responseBean.setObject(null);
+            }
+        }else {
+            responseBean.setCode(300);
+            responseBean.setDescription("trips not found");
+            responseBean.setObject(null);
+        }
+        return new ResponseEntity<Object>(responseBean, HttpStatus.OK);
     }
 }
