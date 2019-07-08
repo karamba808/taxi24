@@ -4,13 +4,11 @@ package bk.project.controllers;
 
 import bk.project.ResponseBean;
 import bk.project.domain.Driver;
+import bk.project.domain.Invoice;
 import bk.project.domain.Rider;
 import bk.project.domain.Trips;
-import bk.project.services.DriverService;
-import bk.project.services.RiderService;
-import bk.project.services.ServiceforAll;
-import bk.project.services.TripsService;
-import okhttp3.OkHttpClient;
+import bk.project.services.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,13 +19,16 @@ import java.util.Date;
 @RestController
 @RequestMapping("/trip")
 public class TripController {
-    OkHttpClient client = new OkHttpClient();
+
     @Autowired
     private TripsService tripsService;
     @Autowired
     private DriverService driverService;
     @Autowired
     private RiderService riderService;
+    @Autowired
+    private InvoiceService invoiceService;
+
     private ServiceforAll s = new ServiceforAll();
 
     @PostMapping("/rider/{rider_id}/driver/{driver_id}/destination/{latitude}/{longitude}")
@@ -99,14 +100,25 @@ public class TripController {
     @PutMapping(value = "/complete_trips/{id}/status/{status}")
     public ResponseEntity<Object> completeActiveTrip(@PathVariable("id") int id,@PathVariable("status") int status){
         Trips trips = tripsService.findOne(id);
+        Invoice invoice = new Invoice();
         ResponseBean responseBean = new ResponseBean();
+
         if (trips != null){
+
             try {
                 trips.setStatus(status);
                 trips.setCompletedAt(new Date().toString());
                 responseBean.setCode(200);
                 responseBean.setDescription("trip well Completed");
                 responseBean.setObject(tripsService.completeTrip(trips));
+                Driver driver = driverService.findById(trips.getDriverId());
+                invoice.setDriverId(trips.getDriverId());
+                invoice.setDriverName(driver.getNames());
+                invoice.setDoneAt(new Date().toString());
+                invoice.setTotolPrice(invoice.getUniPrice() * trips.getDistance());
+                invoice.setDistance(trips.getDistance());
+                invoice.setTripsId(trips.getId());
+                invoiceService.create(invoice);
 
             }catch (Exception e){
                 responseBean.setCode(300);
