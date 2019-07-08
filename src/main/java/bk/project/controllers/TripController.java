@@ -87,11 +87,11 @@ public class TripController {
         return new ResponseEntity<Object>(responseBean,HttpStatus.OK);
     }
 
-    @GetMapping("/completed")
+    @GetMapping("/active")
     public ResponseEntity<Object> completedTrip(){
         ResponseBean responseBean = new ResponseBean();
         responseBean.setCode(200);
-        responseBean.setDescription("All Completed trips");
+        responseBean.setDescription("All Active trips");
         responseBean.setObject(tripsService.completedTrips());
         return new ResponseEntity<Object>(responseBean,HttpStatus.OK);
     }
